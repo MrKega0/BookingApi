@@ -5,6 +5,7 @@ class ServiceCreate(BaseModel):
     title: str
     duration_min: int
     price: int
+    description: str | None
 
 
 class ServiceRead(BaseModel):
@@ -14,3 +15,4 @@ class ServiceRead(BaseModel):
     title: str
     duration_min: int
     price: int
+    description: str | None

@@ -13,3 +13,4 @@ class Service(Base):
     title: Mapped[str] = mapped_column(String)
     duration_min: Mapped[int] = mapped_column(Integer)  # длительность услуги в минутах
     price: Mapped[int] = mapped_column(Integer)  # цена в рублях
+    description: Mapped[str | None] = mapped_column(String, nullable=True)  # описание услуги
