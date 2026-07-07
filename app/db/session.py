@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from app.config import DATABASE_URL
-from app.db.base import Base
-from app.db.services.model import Service  # noqa: F401
+from config import DATABASE_URL
+from db.base import Base
+from db.services.model import Service  # noqa: F401
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 AsyncSessionLocal = async_sessionmaker(

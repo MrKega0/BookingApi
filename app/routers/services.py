@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from app.db.services.crud import create, get_all
-from app.db.services.schemas import ServiceCreate, ServiceRead
-from app.deps import SessionDep
+from db.services.crud import create, get_all
+from db.services.schemas import ServiceCreate, ServiceRead
+from deps import SessionDep
 
 router = APIRouter(prefix="/services", tags=["services"])
 

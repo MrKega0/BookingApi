@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.services.model import Service
-from app.db.services.schemas import ServiceCreate
+from db.services.model import Service
+from db.services.schemas import ServiceCreate
 
 
 async def get_all(session: AsyncSession) -> list[Service]:
