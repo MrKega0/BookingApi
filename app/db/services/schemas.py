@@ -17,6 +17,12 @@ class ServiceRead(BaseModel):
     price: int
     description: str | None
 
+class ServiceUpdate(BaseModel):
+    title: str | None = None
+    duration_min: int | None = None
+    price: int | None = None 
+    description: str | None = None
+
 class CarCreate(BaseModel):
     brand: str
     model: str
