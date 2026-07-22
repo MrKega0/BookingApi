@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from db.services.crud import create_car, get_all_cars
-from db.services.schemas import CarCreate, CarRead
+from db.cars.crud import create_car, get_all
+from db.cars.schemas import CarCreate, CarRead
 from deps import SessionDep
 
 router = APIRouter(prefix="/cars", tags=["cars"])
@@ -9,7 +9,7 @@ router = APIRouter(prefix="/cars", tags=["cars"])
 
 @router.get("")
 async def list_cars(session: SessionDep) -> list[CarRead]:
-    return await get_all_cars(session)
+    return await get_all(session)
 
 
 @router.post("")
