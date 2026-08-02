@@ -40,4 +40,4 @@ async def delete_service(service_id: int, session: SessionDep):
     result = await delete(session, service_id)
     if not result:
         raise HTTPException(status_code=404, detail="Service not found")
-    return Response(status_code=204, detail="Service deleted successfully")
+    return Response(status_code=204)
