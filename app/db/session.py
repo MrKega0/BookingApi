@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import (
 from config import DATABASE_URL
 from db.base import Base
 from db.services.model import Service  # noqa: F401
+from db.cars.model import Car
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 AsyncSessionLocal = async_sessionmaker(

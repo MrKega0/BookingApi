@@ -1,2 +1,2 @@
 __pycache__
-booking.db
+*.db/booking.db
