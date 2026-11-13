@@ -1,7 +1,8 @@
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.bookings.model import Booking
+from db.bookings.model import Booking, BookingStatus
 from db.bookings.schemas import BookingCreate, BookingUpdate
 
 async def get_all(session: AsyncSession) -> list[Booking]:
@@ -9,6 +10,20 @@ async def get_all(session: AsyncSession) -> list[Booking]:
     return result.scalars().all()
 
 async def create(session: AsyncSession, data: BookingCreate) -> Booking:
+    if data.status == BookingStatus.active:
+        stmt = select(Booking.id).where(
+            Booking.car_id == data.car_id,
+            Booking.status == BookingStatus.active,
+            Booking.date_from < data.date_to,
+            Booking.date_to > data.date_from,
+        ).limit(1)
+        result = await session.execute(stmt)
+        if result.scalar_one_or_none() is not None:
+            raise HTTPException(
+                status_code=409,
+                detail="Автомобиль уже забронирован на выбранные даты",
+            )
+
     booking = Booking(**data.model_dump())
     session.add(booking)
     await session.commit()
