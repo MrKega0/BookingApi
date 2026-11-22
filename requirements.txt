@@ -4,3 +4,5 @@ sqlalchemy
 greenlet
 aiosqlite
 asyncpg
+jinja2
+python-multipart

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+</head>
+
+<body>
+    <h1>{{title}}</h1>
+    <div id="cars-container">
+        <!-- Car data will be populated here -->
+    </div>
+    <button id="book-car">Создать бронирование</button>
+    <div id="booking-result"></div>
+</body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async (event) => {
+        const response = await fetch("/api/cars");
+        const cars = await response.json();
+        console.log(cars);
+        if (!cars || cars.length === 0) {
+            document.getElementById("cars-container").innerHTML = "<p>Машины не найдены.</p>";
+            return;
+        }
+        cars.forEach(car => {
+            const carElement = document.createElement("div");
+            carElement.innerHTML = `<h2>${car.brand}</h2><p>${car.model}</p>`;
+            document.getElementById("cars-container").appendChild(carElement);
+        });
+    })
+    document.getElementById("book-car").addEventListener("click", async () => {
+        const bookingData = {
+            car_id: 1,
+            customer_name: "leha",
+            customer_phone: "+79999999999",
+            date_from: "2027-11-13T17:40:34.504",
+            date_to: "2027-11-14T17:40:34.504",
+            status: "active"
+        }
+        const response = await fetch("/api/bookings", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(bookingData)
+        });
+        const result = await response.json();
+        console.log(result);
+        document.getElementById("booking-result").innerHTML = `<p>Бронирование создано: ${JSON.stringify(result)}</p>`;
+    });
+</script>
+
+</html>

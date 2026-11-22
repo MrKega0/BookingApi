@@ -12,7 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
-  
+
   app:
     build:
       context: .
@@ -25,14 +25,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./bot_cache:/app/bot_cache
+      - ./app:/app/app
     healthcheck:
-      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()"]
+      test: [ "CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()" ]
       interval: 2s
       timeout: 3s
       retries: 15
       start_period: 15s
-    
 
 volumes:
   postgres_data:

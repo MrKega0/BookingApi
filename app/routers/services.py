@@ -1,5 +1,3 @@
-
-
 from fastapi import APIRouter
 from fastapi import HTTPException, Response
 
@@ -19,6 +17,7 @@ async def list_services(session: SessionDep) -> list[ServiceRead]:
 async def create_service(data: ServiceCreate, session: SessionDep) -> ServiceRead:
     return await create(session, data)
 
+
 @router.get("/{service_id}")
 async def get_service(service_id: int, session: SessionDep) -> ServiceRead:
     result = await get_by_id(session, service_id)
@@ -27,13 +26,17 @@ async def get_service(service_id: int, session: SessionDep) -> ServiceRead:
         raise HTTPException(status_code=404, detail="Service not found")
     return result
 
+
 @router.patch("/{service_id}")
-async def update_service(service_id: int, data: ServiceUpdate, session: SessionDep) -> ServiceRead:
+async def update_service(
+    service_id: int, data: ServiceUpdate, session: SessionDep
+) -> ServiceRead:
     result = await update(session, service_id, data)
 
     if not result:
         raise HTTPException(status_code=404, detail="Service not found")
     return result
+
 
 @router.delete("/{service_id}")
 async def delete_service(service_id: int, session: SessionDep):
