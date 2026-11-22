@@ -7,10 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.bookings.model import Booking, BookingStatus
 from db.bookings.schemas import BookingCreate, BookingUpdate
 
-async def get_all(session: AsyncSession, car_id: int | None = None) -> Sequence[Booking]:
+async def get_all(session: AsyncSession) -> Sequence[Booking]:
     stmt = select(Booking)
-    if car_id is not None:
-        stmt = stmt.where(Booking.car_id == car_id)
     result = await session.execute(stmt)
     return result.scalars().all()
 
@@ -39,6 +37,11 @@ async def get_by_id(session: AsyncSession, booking_id: int) -> Booking | None:
     stmt = select(Booking).where(Booking.id == booking_id)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
+
+async def get_by_car_id(session: AsyncSession, car_id: int) -> Sequence[Booking]:
+    stmt = select(Booking).where(Booking.car_id == car_id)
+    result = await session.execute(stmt)
+    return result.scalars().all()
 
 async def update(session: AsyncSession, booking_id: int, data: BookingUpdate) -> Booking | None:
     booking = await get_by_id(session, booking_id)

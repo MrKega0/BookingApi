@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi import HTTPException, Response
 
-from db.bookings.crud import create, delete, get_all, get_by_id, update
+from db.bookings.crud import create, delete, get_all, get_by_id, update, get_by_car_id
 from db.bookings.schemas import BookingCreate, BookingRead, BookingUpdate
 from db.cars.crud import get_by_id as get_car_by_id
 from deps import SessionDep
@@ -10,7 +10,10 @@ router = APIRouter(prefix="/bookings", tags=["bookings"])
 
 @router.get("")
 async def list_bookings(session: SessionDep, car_id: int | None = None) -> list[BookingRead]:
-    bookings = await get_all(session, car_id=car_id)
+    if car_id is not None:
+        bookings = await get_by_car_id(session, car_id)  # Check if the car exists
+    else:
+        bookings = await get_all(session)
     return [BookingRead.model_validate(booking) for booking in bookings]
 
 @router.post("")

@@ -15,99 +15,165 @@
     <div id="booking-result" role="status"></div>
     <section>
         <h2>Бронирования</h2>
+        <form action="" id="booking-search">
+            <input type="text" name="car_id" id="car_id">
+            <input type="submit" value="Найти бронирования">
+        </form>
         <ul id="bookings-container"></ul>
     </section>
+    <form action="" id="booking-form">
+        <select name="car_id" id="car_id-select"></select>
+        <input type="text" name="customer_name" placeholder="Имя клиента" required>
+        <input type="text" name="customer_phone" placeholder="Телефон клиента" required>
+        <input type="datetime-local" name="date_from" required>
+        <input type="datetime-local" name="date_to" required>
+        <button type="submit">Забронировать</button>
+    </form>
 
-<script>
-    const bookingResult = document.getElementById("booking-result");
-    const bookingsContainer = document.getElementById("bookings-container");
+    <script>
+        const bookingResult = document.getElementById("booking-result");
+        const bookingsContainer = document.getElementById("bookings-container");
 
-    document.addEventListener("DOMContentLoaded", () => {
-        loadCars();
-        loadBookings();
-    });
+        document.addEventListener("DOMContentLoaded", () => {
+            loadCars();
+            loadBookings();
+            document.getElementById("booking-search").addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const carIdInput = document.getElementById("car_id");
+                loadBookings(carIdInput.value);
+            })
+            document.getElementById("booking-form").addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const formData = new FormData(event.target);
 
-    async function loadCars() {
-        const response = await fetch("/api/cars");
-        const cars = await response.json();
-        if (!cars || cars.length === 0) {
-            document.getElementById("cars-container").innerHTML = "<p>Машины не найдены.</p>";
-            return;
-        }
-        cars.forEach(car => {
-            const carElement = document.createElement("div");
-            carElement.innerHTML = `<h2>${car.brand}</h2><p>${car.model}</p>`;
-            document.getElementById("cars-container").appendChild(carElement);
+                const bookingData = {
+                    car_id: formData.get("car_id"),
+                    customer_name: formData.get("customer_name"),
+                    customer_phone: formData.get("customer_phone"),
+                    date_from: formData.get("date_from"),
+                    date_to: formData.get("date_to"),
+                    status: "active"
+                };
 
-            const bookButton = document.createElement("button");
-            bookButton.textContent = "Забронировать";
-            bookButton.addEventListener("click", async () => {
-                bookButton.disabled = true;
                 try {
-                    await bookCar(car.id);
-                } finally {
-                    bookButton.disabled = false;
+                    const response = await fetch("/api/bookings", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(bookingData)
+                    });
+                    if (response.status === 409) {
+                        const result = await response.json();
+                        bookingResult.textContent = result.detail;
+                    } else if (response.ok) {
+                        const result = await response.json();
+                        bookingResult.textContent = `Бронирование №${result.id} создано.`;
+                        await loadBookings();
+                    } else {
+                        bookingResult.textContent = `Не удалось создать бронирование (HTTP ${response.status}).`;
+                    }
+                } catch {
+                    bookingResult.textContent = "Не удалось создать бронирование. Попробуйте ещё раз.";
                 }
-            });
-            carElement.appendChild(bookButton);
+
+
+            })
         });
-    }
 
-    async function loadBookings() {
-        try {
-            const response = await fetch("/api/bookings");
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+        async function loadCars() {
+            const response = await fetch("/api/cars");
+            const cars = await response.json();
+            if (!cars || cars.length === 0) {
+                document.getElementById("cars-container").innerHTML = "<p>Машины не найдены.</p>";
+                return;
             }
-            const bookings = await response.json();
-            const items = bookings.map(booking => {
-                const item = document.createElement("li");
-                item.textContent = `Бронь №${booking.id} · Машина ID ${booking.car_id} · ${booking.date_from} — ${booking.date_to} · ${booking.status}`;
-                return item;
-            });
-            if (items.length === 0) {
-                const item = document.createElement("li");
-                item.textContent = "Бронирований пока нет.";
-                items.push(item);
-            }
-            bookingsContainer.replaceChildren(...items);
-        } catch {
-            const item = document.createElement("li");
-            item.textContent = "Не удалось загрузить бронирования.";
-            bookingsContainer.replaceChildren(item);
-        }
-    }
+            const carSelect = document.getElementById("car_id-select");
+            cars.forEach(car => {
+                const carElement = document.createElement("div");
+                carElement.innerHTML = `<h2>${car.brand}</h2><p>${car.model}</p>`;
+                document.getElementById("cars-container").appendChild(carElement);
 
-    async function bookCar(car_id) {
-        const bookingData = {
-            car_id: car_id,
-            customer_name: "leha",
-            customer_phone: "+79999999999",
-            date_from: "2027-11-13T17:40:34.504",
-            date_to: "2027-11-14T17:40:34.504",
-            status: "active"
-        }
-        try {
-            const response = await fetch("/api/bookings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(bookingData)
+                const bookButton = document.createElement("button");
+                bookButton.textContent = "Забронировать";
+                bookButton.addEventListener("click", async () => {
+                    bookButton.disabled = true;
+                    try {
+                        await bookCar(car.id);
+                    } finally {
+                        bookButton.disabled = false;
+                    }
+                });
+                carElement.appendChild(bookButton);
+
+                const option = document.createElement("option");
+                option.value = car.id;
+                option.textContent = `${car.brand} ${car.model}`;
+                carSelect.appendChild(option);
             });
-            if (response.status === 409) {
-                const result = await response.json();
-                bookingResult.textContent = result.detail;
-            } else if (response.ok) {
-                const result = await response.json();
-                bookingResult.textContent = `Бронирование №${result.id} создано.`;
-                await loadBookings();
-            } else {
-                bookingResult.textContent = `Не удалось создать бронирование (HTTP ${response.status}).`;
-            }
-        } catch {
-            bookingResult.textContent = "Не удалось создать бронирование. Попробуйте ещё раз.";
         }
-    }
-</script>
+
+        async function loadBookings(car_id = null) {
+            try {
+                let response;
+                if (car_id !== null) {
+                    response = await fetch(`/api/bookings?car_id=${car_id}`);
+                }
+                else {
+                    response = await fetch("/api/bookings");
+                }
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const bookings = await response.json();
+                console.log("Loaded bookings:", bookings);
+                const items = bookings.map(booking => {
+                    const item = document.createElement("li");
+                    item.textContent = `Бронь №${booking.id} · Машина ID ${booking.car_id} · ${booking.date_from} — ${booking.date_to} · ${booking.status}`;
+                    return item;
+                });
+                if (items.length === 0) {
+                    const item = document.createElement("li");
+                    item.textContent = "Бронирований пока нет.";
+                    items.push(item);
+                }
+                bookingsContainer.replaceChildren(...items);
+            } catch {
+                const item = document.createElement("li");
+                item.textContent = "Не удалось загрузить бронирования.";
+                bookingsContainer.replaceChildren(item);
+            }
+        }
+
+        async function bookCar(car_id) {
+            const bookingData = {
+                car_id: car_id,
+                customer_name: "leha",
+                customer_phone: "+79999999999",
+                date_from: "2027-11-13T17:40:34.504",
+                date_to: "2027-11-14T17:40:34.504",
+                status: "active"
+            }
+            try {
+                const response = await fetch("/api/bookings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(bookingData)
+                });
+                if (response.status === 409) {
+                    const result = await response.json();
+                    bookingResult.textContent = result.detail;
+                } else if (response.ok) {
+                    const result = await response.json();
+                    bookingResult.textContent = `Бронирование №${result.id} создано.`;
+                    await loadBookings();
+                } else {
+                    bookingResult.textContent = `Не удалось создать бронирование (HTTP ${response.status}).`;
+                }
+            } catch {
+                bookingResult.textContent = "Не удалось создать бронирование. Попробуйте ещё раз.";
+            }
+        }
+
+    </script>
 </body>
 
 </html>
