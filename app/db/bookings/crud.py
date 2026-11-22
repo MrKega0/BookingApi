@@ -1,12 +1,17 @@
 from fastapi import HTTPException
+from collections.abc import Sequence
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.bookings.model import Booking, BookingStatus
 from db.bookings.schemas import BookingCreate, BookingUpdate
 
-async def get_all(session: AsyncSession) -> list[Booking]:
-    result = await session.execute(select(Booking))
+async def get_all(session: AsyncSession, car_id: int | None = None) -> Sequence[Booking]:
+    stmt = select(Booking)
+    if car_id is not None:
+        stmt = stmt.where(Booking.car_id == car_id)
+    result = await session.execute(stmt)
     return result.scalars().all()
 
 async def create(session: AsyncSession, data: BookingCreate) -> Booking:

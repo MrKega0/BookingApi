@@ -9,8 +9,9 @@ from deps import SessionDep
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 
 @router.get("")
-async def list_bookings(session: SessionDep) -> list[BookingRead]:
-    return await get_all(session)
+async def list_bookings(session: SessionDep, car_id: int | None = None) -> list[BookingRead]:
+    bookings = await get_all(session, car_id=car_id)
+    return [BookingRead.model_validate(booking) for booking in bookings]
 
 @router.post("")
 async def post_create_booking(data: BookingCreate, session: SessionDep) -> BookingRead:
